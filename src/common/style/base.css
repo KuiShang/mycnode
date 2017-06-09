@@ -95,6 +95,16 @@ a:hover::after {
     transform: rotate(0); }
   to {
     transform: rotate(360deg); } }
+.slide-fade-enter-active {
+  transition: all .6s ease; }
+
+.slide-fade-leave-active {
+  transition: all .5s ease; }
+
+.slide-fade-enter, .slide-fade-leave-active {
+  transform: translateX(60px);
+  opacity: 0; }
+
 .slide-top-enter-active {
   transition: all .5s ease; }
 

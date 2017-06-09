@@ -40,21 +40,19 @@
         tab() {
           return this.$store.state.tab
         },
+
         articleList() {
           return this.$store.state.articleList
         }
       },
       methods: {
-        changeloading() {
-          this.isLoading = false
-        },
         changeTab(type, page = 1) {
           this.isLoading = true
           this.$store.commit('changeTab', {type: type, articleList: []})
           this.axios.get(`https://cnodejs.org/api/v1/topics?page=${page}&tab=${type}`)
             .then(result => result.data.data)
             .then(articleList => this.$store.commit('changeTab', {type: type, articleList: articleList}))
-            .then(this.changeloading)
+            .then(this.isLoading = false)
         },
         scroll(event) {
           if (event.target.clientHeight > event.target.scrollTop) {
@@ -83,7 +81,6 @@
             }
           }
         },
-
         toTop() {
           if (this.$refs.article.scrollTop <= 0) {
             return
