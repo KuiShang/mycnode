@@ -2,11 +2,24 @@
   <div class="content">
 
     <div class="tab">
-      <div @click="changeTab('all')" :class="{isBorder: tab==='all'}" class="all type"><router-link to="/">首页</router-link></div>
-      <div @click="changeTab('good')" :class="{isBorder: tab==='good'}" class="good type"><router-link to="/">精华</router-link></div>
-      <div @click="changeTab('share')" :class="{isBorder: tab==='share'}" class="share type"><router-link to="/">分享</router-link></div>
-      <div @click="changeTab('ask')" :class="{isBorder: tab==='ask'}" class="ask type"><router-link to="/">问答</router-link></div>
-      <div @click="changeTab('job')" :class="{isBorder: tab==='job'}" class="job type"><router-link to="/">招聘</router-link></div>
+      <div @click="changeTab('all')" :class="{isBorder: tab==='all'}" class="all type">
+        <router-link to="/">首页</router-link>
+      </div>
+      <div @click="changeTab('good')" :class="{isBorder: tab==='good'}" class="good type">
+        <router-link to="/">精华</router-link>
+      </div>
+      <div @click="changeTab('share')" :class="{isBorder: tab==='share'}" class="share type">
+        <router-link to="/">分享</router-link>
+      </div>
+      <div @click="changeTab('ask')" :class="{isBorder: tab==='ask'}" class="ask type">
+        <router-link to="/">问答</router-link>
+      </div>
+      <div @click="changeTab('job')" :class="{isBorder: tab==='job'}" class="job type">
+        <router-link to="/">招聘</router-link>
+      </div>
+      <div >
+        <router-link to="/test1">测试1</router-link>
+      </div>
     </div>
 
     <div ref="article" @scroll="scroll($event)" class="article">
@@ -26,74 +39,74 @@
   </div>
 </template>
 <script type="text/ecmascript-6">
-    export default{
-      name: 'content',
-      data() {
-        return {
-          page: 1,
-          over: false, // 是否已经没有内容加载
-          isShowTop: false,
-          isLoading: false
-        }
+  export default{
+    name: 'content',
+    data() {
+      return {
+        page: 1,
+        over: false, // 是否已经没有内容加载
+        isShowTop: false,
+        isLoading: false
+      }
+    },
+    computed: {
+      tab() {
+        return this.$store.state.tab
       },
-      computed: {
-        tab() {
-          return this.$store.state.tab
-        },
 
-        articleList() {
-          return this.$store.state.articleList
+      articleList() {
+        return this.$store.state.articleList
+      }
+    },
+    methods: {
+      changeTab(type, page = 1) {
+        this.isLoading = true
+        this.$store.commit('changeTab', {type: type, articleList: []})
+        this.axios.get(`https://cnodejs.org/api/v1/topics?page=${page}&tab=${type}`)
+          .then(result => result.data.data)
+          .then(articleList => this.$store.commit('changeTab', {type: type, articleList: articleList}))
+          .then(() => this.isLoading = false)
+      },
+      scroll(event) {
+        if (event.target.clientHeight > event.target.scrollTop) {
+          this.isShowTop = false
+        } else {
+          this.isShowTop = true
+        }
+        if (this.$route.path !== '/') {
+          return
+        } else if (!this.over) {
+          let flag = event.target.clientHeight + event.target.scrollTop === event.target.scrollHeight
+          if (flag) {
+            this.$store.commit('changeMore', true)
+            this.page++
+            this.axios.get(`https://cnodejs.org/api/v1/topics?page=${this.page}&tab=${this.tab}`)
+              .then(result => result.data.data)
+              .then(articleList => {
+                if (!articleList.length) {
+                  this.over = true
+                  this.$store.commit('changeMore', false)
+                  return
+                }
+                this.$store.commit('changeTab', {articleList: this.articleList.concat(articleList), isLoading: false})
+              })
+              .then(() => this.$store.commit('changeMore', false))
+          }
         }
       },
-      methods: {
-        changeTab(type, page = 1) {
-          this.isLoading = true
-          this.$store.commit('changeTab', {type: type, articleList: []})
-          this.axios.get(`https://cnodejs.org/api/v1/topics?page=${page}&tab=${type}`)
-            .then(result => result.data.data)
-            .then(articleList => this.$store.commit('changeTab', {type: type, articleList: articleList}))
-            .then(this.isLoading = false)
-        },
-        scroll(event) {
-          if (event.target.clientHeight > event.target.scrollTop) {
-            this.isShowTop = false
-          } else {
-            this.isShowTop = true
-          }
-          if (this.$route.path !== '/') {
-            return
-          } else if (!this.over) {
-            let flag = event.target.clientHeight + event.target.scrollTop === event.target.scrollHeight
-            if (flag) {
-              this.$store.commit('changeMore', true)
-              this.page ++
-              this.axios.get(`https://cnodejs.org/api/v1/topics?page=${this.page}&tab=${this.tab}`)
-                .then(result => result.data.data)
-                .then(articleList => {
-                  if (!articleList.length) {
-                    this.over = true
-                    this.$store.commit('changeMore', false)
-                    return
-                  }
-                  this.$store.commit('changeTab', {articleList: this.articleList.concat(articleList), isLoading: false})
-                })
-                .then(() => this.$store.commit('changeMore', false))
-            }
-          }
-        },
-        toTop() {
-          if (this.$refs.article.scrollTop <= 0) {
-            return
-          }
-          let time = setInterval(() => {
-            if (this.$refs.article.scrollTop <= 0) {
-              clearInterval(time)
-            }
-            this.$refs.article.scrollTop -= 200
-          }, 1)
+      toTop() {
+        if (this.$refs.article.scrollTop <= 0) {
+          return
         }
+        let time = setInterval(() => {
+          if (this.$refs.article.scrollTop <= 0) {
+            clearInterval(time)
+          }
+          this.$refs.article.scrollTop -= 200
+        }, 1)
       }
     }
+  }
 </script>
 <style rel="stylesheet/scss" lang="scss" scoped>
   .content {

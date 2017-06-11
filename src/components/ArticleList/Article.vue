@@ -1,6 +1,8 @@
 <template lang="html">
-  <div class="article-detail"  ref="article" @scroll="scroll($event)">
-
+  <div class="article-detail" ref="article" @scroll="scroll($event)">
+    <div class="loading">
+      <i v-if="isLoading" class="icon-loading"></i>
+    </div>
     <div v-show="!isLoading" class="body">
 
       <div class="article-title">
@@ -92,10 +94,20 @@
         isLoading: false,
         currentIndex: null,
         currentUps: null,
-        replies: []
+        replies: [],
+        $route: this.$route
       }
     },
+    beforeRouteEnter (to, from, next) {
+      console.log(to)
+      console.log(from)
+      console.log(next)
+      console.log('---------------------')
+      next()
+      console.log('222222222')
+    },
     created() {
+      console.log(123)
       this.isLoading = true
       this.axios.get('https://cnodejs.org/api/v1/topic/' + this.id)
         .then(result => result.data.data)
@@ -108,6 +120,11 @@
             img.onclick = () => location.href = img.src
           }
         })
+    },
+    watch: {
+      $route () {
+        console.log('$router changed!!')
+      }
     },
     computed: {
       ak() {
@@ -226,6 +243,23 @@
     background-color: rgba(0, 0, 0, .07);
     overflow-x: hidden;
     overflow-y: auto;
+
+    .loading {
+      display: flex;
+      justify-content: center;
+      .icon-loading {
+        display: inline-block;
+        position: absolute;
+        text-align: center;
+        width: 40px;
+        height: 40px;
+
+        background: url('./icon-loading.svg') no-repeat;
+        animation: loading .4s linear infinite;
+        background-size: contain;
+      }
+    }
+
     .body {
       background-color: white;
       height: 100%;
